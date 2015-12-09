@@ -7,7 +7,7 @@ package streamer;
 
 /**
  *
- * @author negarbayati
+ * @author shayanyousefian & negarbayati
  */
 
 import java.awt.List;

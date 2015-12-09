@@ -130,9 +130,9 @@ public class ClientGUI extends javax.swing.JFrame {
             }catch(Exception e){
                 JOptionPane.showMessageDialog(null, "Error2 progress pausing "+ e);
             }
-            progressAmount = (int)(timerMostCurrent*100) / trackLength;
-            jLabel2.setText(String.format("%02d",progressAmount) +"%");
-            jProgressBar1.setValue(progressAmount);
+//            progressAmount = (int)(timerMostCurrent*100) / trackLength;
+//            jLabel2.setText(String.format("%02d",progressAmount) +"%");
+//            jProgressBar1.setValue(progressAmount);
         }
     }
     /**
