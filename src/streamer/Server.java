@@ -6,7 +6,7 @@ import java.net.*;
 
 class Server {
    public static void main(String args[]) {
-      String data = "Toobie ornaught toobie";
+
 //      try {
 //         ServerSocket srvr = new ServerSocket(1234);
 //         Socket skt = srvr.accept();
@@ -19,7 +19,8 @@ class Server {
 //         srvr.close();
 //      }
         try (ServerSocket serverSocker = new ServerSocket(1234); 
-            FileInputStream in = new FileInputStream("/Users/Shayanyousefian/Documents/Eclipse_workspace/Audio-Streamer-Java/still.mp3")) {
+            FileInputStream in = new FileInputStream("/Users/Shayanyousefian/Downloads/Ali-Zand-Vakili-Be-Sooye-To-@Otaghe8Bot.mp3")) {
+            in.skip(1016096);
             if (serverSocker.isBound()) {
                 Socket client = serverSocker.accept();
                 OutputStream out = client.getOutputStream();

@@ -5,6 +5,8 @@
  */
 package streamer;
 
+import javax.swing.JOptionPane;
+
 /**
  *
  * @author Shayanyousefian
@@ -14,7 +16,10 @@ public class ClientGUI extends javax.swing.JFrame {
     /**
      * Creates new form ClientGUI
      */
-    private static CustomPlayer player;
+    public static CustomPlayer player;
+    private int timerLastAmount;
+    private int ms;
+    private Thread timer;
     
     public ClientGUI() {
         
@@ -24,6 +29,43 @@ public class ClientGUI extends javax.swing.JFrame {
         //player.pause();
     }
 
+    public void updateTime() {
+        ms = player.getTime();
+        // Playing
+        if(ms==0){
+            timer = new Thread(
+                new Runnable(){
+                    public void run(){
+                        try{
+                            while(true){
+                                ms = player.getTime();
+                                ms += timerLastAmount;
+                                StringBuilder sb = new StringBuilder();
+                                sb.append(ms);
+                                jLabel1.setText("time is:"+ sb.toString());
+                            }
+                        }catch(Exception e){
+                            JOptionPane.showMessageDialog(null, "Error1 displaying time resuming"+ e);
+                        }
+                    }
+                }
+            );
+            timer.start();
+        }else{
+            timerLastAmount = ms;
+            try{
+//                timer.stop();
+//                timer.wait();
+                timer.interrupt();
+//                timer = null;
+            }catch(Exception e){
+                JOptionPane.showMessageDialog(null, "Error2 pausing "+ e);
+            }
+            StringBuilder sb = new StringBuilder();
+            sb.append(timerLastAmount);
+            jLabel1.setText("time is:"+ sb.toString());
+        }
+    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -35,6 +77,7 @@ public class ClientGUI extends javax.swing.JFrame {
 
         jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
+        jLabel1 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -52,15 +95,22 @@ public class ClientGUI extends javax.swing.JFrame {
             }
         });
 
+        jLabel1.setText("jLabel1");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(27, 27, 27)
-                .addComponent(jButton1)
-                .addGap(45, 45, 45)
-                .addComponent(jButton2)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(27, 27, 27)
+                        .addComponent(jButton1)
+                        .addGap(45, 45, 45)
+                        .addComponent(jButton2))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(116, 116, 116)
+                        .addComponent(jLabel1)))
                 .addContainerGap(173, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -70,7 +120,9 @@ public class ClientGUI extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jButton1)
                     .addComponent(jButton2))
-                .addContainerGap(225, Short.MAX_VALUE))
+                .addGap(46, 46, 46)
+                .addComponent(jLabel1)
+                .addContainerGap(163, Short.MAX_VALUE))
         );
 
         pack();
@@ -79,11 +131,13 @@ public class ClientGUI extends javax.swing.JFrame {
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         // TODO add your handling code here:
         player.resume();
+        //updateTime();
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         // TODO add your handling code here:
         player.pause();
+        //updateTime();
     }//GEN-LAST:event_jButton2ActionPerformed
 
     /**
@@ -128,5 +182,6 @@ public class ClientGUI extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
+    private javax.swing.JLabel jLabel1;
     // End of variables declaration//GEN-END:variables
 }

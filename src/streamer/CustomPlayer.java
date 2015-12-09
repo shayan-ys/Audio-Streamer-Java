@@ -11,7 +11,10 @@ package streamer;
  */
 
 import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
 import java.net.SocketAddress;
@@ -23,6 +26,7 @@ public class CustomPlayer {
 private Player player;
 private FileInputStream FIS;
 private BufferedInputStream BIS;
+private InputStream NIS;
 private Socket socket;
 private boolean canResume;
 private String path;
@@ -32,6 +36,7 @@ private boolean valid;
 private boolean socketAvailable;
 private int portNumber;
 private SocketAddress bindpoint;
+private byte[] buffer;
 
 public CustomPlayer(){
     player = null;
@@ -43,12 +48,29 @@ public CustomPlayer(){
     stopped = 0;
     canResume = true;
     socketAvailable = false;
+    buffer = new byte[0xFFFFFFF];
 }
 
 public void setSocket(int port) {
     portNumber = port;
     try{
         socket = new Socket("localhost", port);
+        BIS = new BufferedInputStream(socket.getInputStream()); 
+        ;
+        
+        new Thread(
+                new Runnable(){
+                    public void run(){
+                        try{
+                            buffer = getBytes(BIS);
+                            NIS = new ByteArrayInputStream(buffer);
+                        }catch(Exception e){
+                            JOptionPane.showMessageDialog(null, "Error1 playing mp3 file"+ e);
+                            valid = false;
+                        }
+                    }
+                }
+        ).start();
         socketAvailable = true;
     }catch(Exception e) {
          JOptionPane.showMessageDialog(null, "Error Streaming failed"+ e);
@@ -67,16 +89,24 @@ public void setPath(String path){
 public void pause(){
     try{
         if(socketAvailable) {
-            stopped = socket.getInputStream().available();
-            bindpoint = socket.getLocalSocketAddress();
+            //stopped = socket.getInputStream().available();
+            stopped = NIS.available();
+            //stopped = player.getPosition();
+            socket.close();
+            System.out.println("stopped="+stopped);
+            
+            System.out.println("position="+player.getPosition()+"s");
+            //bindpoint = socket.getLocalSocketAddress();
             
         }else{
             stopped = FIS.available();
-            player.close();
-            player = null;
+            BIS = null;
         }
-        FIS = null;
         BIS = null;
+        player.close();
+        player = null;
+        FIS = null;
+        
         if(valid) canResume = true;
     }catch(Exception e){
         System.out.println("paused error!");
@@ -86,6 +116,9 @@ public void pause(){
 public void resume(){
     if(!canResume) return;
     if(play(total-stopped)) canResume = false;
+}
+public int getTime() {
+    return player.getPosition();
 }
 
 public boolean play(int pos){
@@ -99,15 +132,21 @@ public boolean play(int pos){
             BIS = new BufferedInputStream(FIS);
             player = new Player(BIS);
         }else{
-            if(socket.isClosed())
-                socket.bind(bindpoint);
-            if(player==null) {
-                InputStream stream = socket.getInputStream();
-                stream.skip(pos);
-                player = new Player(stream);
-            }else{
-                player.notify();
-            }
+//            BIS.skip(pos);
+            System.out.println("buffersize="+ total);
+            System.out.println("playfrom="+ stopped);
+            total = NIS.available();
+            buffer = getSubByte(buffer, pos);
+            System.out.println("slicebuffersize="+ buffer.length);
+            //InputStream is = null;
+            NIS = new ByteArrayInputStream(buffer);
+            //is.skip(is.available() - stopped);
+            //BIS = new BufferedInputStream(is);
+            //is.skip(pos);
+            player = new Player(NIS);
+            //System.out.println("position="+player.getPosition()+"s");
+            //player.play();
+//            player.play(pos);
         }
         
         new Thread(
@@ -128,5 +167,42 @@ public boolean play(int pos){
     }
     return valid;
 }
+
+public static byte[] getBytes(InputStream is) throws IOException {
+
+    int len;
+    int size = 1024;
+    byte[] buf;
+
+    if (is instanceof ByteArrayInputStream) {
+      size = is.available();
+      buf = new byte[size];
+      len = is.read(buf, 0, size);
+    } else {
+      ByteArrayOutputStream bos = new ByteArrayOutputStream();
+      buf = new byte[size];
+      while ((len = is.read(buf, 0, size)) != -1) {
+        bos.write(buf, 0, len);        
+      }
+      buf = bos.toByteArray();
+    }
+    return buf;
+  }
+/**
+   * Gets the subarray from <tt>array</tt> that starts at <tt>offset</tt>.
+   */
+  public static byte[] getSubByte(byte[] array, int offset) {
+    return getSubByte(array, offset, array.length - offset);
+  }
+
+  /**
+   * Gets the subarray of length <tt>length</tt> from <tt>array</tt>
+   * that starts at <tt>offset</tt>.
+   */
+  public static byte[] getSubByte(byte[] array, int offset, int length) {
+    byte[] result = new byte[length];
+    System.arraycopy(array, offset, result, 0, length);
+    return result;
+  }
 
 }

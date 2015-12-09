@@ -12,7 +12,9 @@ class Client {
          Socket skt = new Socket("localhost", 1234);
 //         InputStreamReader in = new InputStreamReader(skt.getInputStream());
          System.out.print("Received string: '");
-         Player plyr = new Player(skt.getInputStream());
+//         Player plyr = new Player(skt.getInputStream());
+         BufferedInputStream bis = new BufferedInputStream(skt.getInputStream());
+         Player plyr = new Player(bis);
          System.out.println("1");
          plyr.play();
          System.out.println("2");

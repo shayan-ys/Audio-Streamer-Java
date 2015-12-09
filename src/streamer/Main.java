@@ -8,6 +8,7 @@ import java.io.FileInputStream;
 import java.net.Socket;
 import java.net.ServerSocket;
 import java.util.concurrent.TimeUnit;
+import javax.swing.JOptionPane;
 import javazoom.jl.player.advanced.AdvancedPlayer;
  
 //import javax.sound.sampled.*;
@@ -18,11 +19,17 @@ public class Main {
 	public static void main(String[] args) {
             ServerSocket MyService;
 		try {
+//                    String[] s = {"Cheese", "Pepperoni", "Black Olives"};
+//                    Server.main(s);
+                    ClientGUI cg = new ClientGUI();
+                    cg.show();
+                    
+                    
 //                    MyService = new ServerSocket(3356);
-			FileInputStream file = new FileInputStream("/Users/Shayanyousefian/Documents/Eclipse_workspace/Audio-Streamer-Java/still.mp3");
-                        CustomPlayer myplayer = new CustomPlayer();
-                        myplayer.setPath("/Users/Shayanyousefian/Documents/Eclipse_workspace/Audio-Streamer-Java/still.mp3");
-                        myplayer.play(200000);
+//			FileInputStream file = new FileInputStream("/Users/Shayanyousefian/Documents/Eclipse_workspace/Audio-Streamer-Java/still.mp3");
+//                        CustomPlayer myplayer = new CustomPlayer();
+//                        myplayer.setPath("/Users/Shayanyousefian/Documents/Eclipse_workspace/Audio-Streamer-Java/still.mp3");
+//                        myplayer.play(200000);
 
                         //TimeUnit.SECONDS.sleep(3);
 
