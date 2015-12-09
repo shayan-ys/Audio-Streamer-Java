@@ -10,6 +10,7 @@ package streamer;
  * @author negarbayati
  */
 
+import java.awt.List;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -20,6 +21,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.Socket;
 import java.net.SocketAddress;
+import java.util.ArrayList;
 import javax.swing.JOptionPane;
 import javazoom.jl.player.Player;
 
@@ -54,7 +56,7 @@ public CustomPlayer(){
     buffer = new byte[0xFFFFFFF];
 }
 
-public int getMetaLength(int port) {
+public ArrayList<String> getMetaData(int port) {
     try {
          Socket metaSocket = new Socket("localhost", port);
          BufferedReader in = new BufferedReader(new
@@ -62,16 +64,21 @@ public int getMetaLength(int port) {
          System.out.print("Received string:");
 
          while (!in.ready()) {}
-         String lengthStr = in.readLine();
-         System.out.println(lengthStr); // Read one line and output it
+         String liner;
+         ArrayList<String> data = new ArrayList<String>();
+         while((liner = in.readLine())!=null){
+             data.add(liner);
+             System.out.println(liner);
+         }
+
          in.close();
          metaSocket.close();
-         return Integer.parseInt(lengthStr);
+         return data;
       }
       catch(Exception e) {
          System.out.println("Whoops! metaSocket exception "+ e);
       }
-    return 0;
+    return null;
 }
 
 public void setSocket(int port) {

@@ -6,6 +6,8 @@ import java.net.*;
 import org.jaudiotagger.audio.AudioFile;
 import org.jaudiotagger.audio.AudioFileIO;
 import org.jaudiotagger.audio.AudioHeader;
+import org.jaudiotagger.tag.FieldKey;
+import org.jaudiotagger.tag.Tag;
 
 class Server {
     
@@ -37,18 +39,23 @@ class Server {
             AudioFile f = AudioFileIO.read(file);
             //Tag tag = f.getTag();
             AudioHeader ah = f.getAudioHeader();
+            Tag tg = f.getTag();
             int lengthSec = ah.getTrackLength();
             
             System.out.println(lengthSec);
             
-            String data = String.format("%02d", lengthSec*1000);
+            String length = String.format("%02d", lengthSec*1000);
             
             ServerSocket srvr = new ServerSocket(1236);
             Socket skt = srvr.accept();
             System.out.print("Meta Server has connected!\n");
             PrintWriter out = new PrintWriter(skt.getOutputStream(), true);
-            System.out.print("Sending Meta string: '" + data + "'\n");
-            out.print(data);
+            System.out.print("Sending Meta string: '" + length + "'\n");
+            out.println(tg.getFirst(FieldKey.TITLE));
+            out.println(tg.getFirst(FieldKey.ALBUM));
+            out.println(tg.getFirst(FieldKey.ARTIST));
+            out.println(tg.getFirst(FieldKey.YEAR));
+            out.println(length);
             out.close();
             skt.close();
             srvr.close();
