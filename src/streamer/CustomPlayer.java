@@ -118,6 +118,7 @@ public void resume(){
     if(play(total-stopped)) canResume = false;
 }
 public int getTime() {
+    if(player==null) return -1;
     return player.getPosition();
 }
 

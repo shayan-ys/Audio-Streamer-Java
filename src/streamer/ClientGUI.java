@@ -17,8 +17,9 @@ public class ClientGUI extends javax.swing.JFrame {
      * Creates new form ClientGUI
      */
     public static CustomPlayer player;
-    private int timerLastAmount;
-    private int ms;
+    private long timerLastAmount=0;
+    private long timerMostCurrent=0;
+    private long ms;
     private Thread timer;
     
     public ClientGUI() {
@@ -29,16 +30,16 @@ public class ClientGUI extends javax.swing.JFrame {
         //player.pause();
     }
 
-    public void updateTime() {
-        ms = player.getTime();
+    public void updateTime(String mode) {
         // Playing
-        if(ms==0){
+        if(mode == "resume"){
             timer = new Thread(
                 new Runnable(){
                     public void run(){
                         try{
                             while(true){
                                 ms = player.getTime();
+                                if(ms>timerMostCurrent) timerMostCurrent = ms;
                                 ms += timerLastAmount;
                                 StringBuilder sb = new StringBuilder();
                                 sb.append(ms);
@@ -51,16 +52,24 @@ public class ClientGUI extends javax.swing.JFrame {
                 }
             );
             timer.start();
+        
+        // PAUSING
         }else{
-            timerLastAmount = ms;
+            ms = -1;
             try{
-//                timer.stop();
+                timer.stop();
 //                timer.wait();
                 timer.interrupt();
-//                timer = null;
+                timer = null;
             }catch(Exception e){
                 JOptionPane.showMessageDialog(null, "Error2 pausing "+ e);
             }
+            System.out.println("timerLastAmount="+timerLastAmount);
+            System.out.println("timerMostCurrent="+timerMostCurrent);
+            System.out.println("ms="+ms);
+            timerLastAmount += timerMostCurrent;
+            timerMostCurrent = -1;
+            
             StringBuilder sb = new StringBuilder();
             sb.append(timerLastAmount);
             jLabel1.setText("time is:"+ sb.toString());
@@ -130,14 +139,14 @@ public class ClientGUI extends javax.swing.JFrame {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         // TODO add your handling code here:
+        updateTime("resume");
         player.resume();
-        //updateTime();
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         // TODO add your handling code here:
+        updateTime("save");
         player.pause();
-        //updateTime();
     }//GEN-LAST:event_jButton2ActionPerformed
 
     /**
