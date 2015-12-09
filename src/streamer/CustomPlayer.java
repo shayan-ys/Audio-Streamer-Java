@@ -11,11 +11,13 @@ package streamer;
  */
 
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.Socket;
 import java.net.SocketAddress;
 import javax.swing.JOptionPane;
@@ -37,6 +39,7 @@ private boolean socketAvailable;
 private int portNumber;
 private SocketAddress bindpoint;
 private byte[] buffer;
+private int streamSize;
 
 public CustomPlayer(){
     player = null;
@@ -51,11 +54,32 @@ public CustomPlayer(){
     buffer = new byte[0xFFFFFFF];
 }
 
+public int getMetaLength(int port) {
+    try {
+         Socket metaSocket = new Socket("localhost", port);
+         BufferedReader in = new BufferedReader(new
+            InputStreamReader(metaSocket.getInputStream()));
+         System.out.print("Received string:");
+
+         while (!in.ready()) {}
+         String lengthStr = in.readLine();
+         System.out.println(lengthStr); // Read one line and output it
+         in.close();
+         metaSocket.close();
+         return Integer.parseInt(lengthStr);
+      }
+      catch(Exception e) {
+         System.out.println("Whoops! metaSocket exception "+ e);
+      }
+    return 0;
+}
+
 public void setSocket(int port) {
     portNumber = port;
     try{
         socket = new Socket("localhost", port);
-        BIS = new BufferedInputStream(socket.getInputStream()); 
+        BIS = new BufferedInputStream(socket.getInputStream());
+        streamSize = BIS.available();
         ;
         
         new Thread(
@@ -116,6 +140,9 @@ public void pause(){
 public void resume(){
     if(!canResume) return;
     if(play(total-stopped)) canResume = false;
+}
+public int getProgress() {
+    return 0;
 }
 public int getTime() {
     if(player==null) return -1;

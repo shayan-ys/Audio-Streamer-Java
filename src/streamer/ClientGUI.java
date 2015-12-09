@@ -21,12 +21,18 @@ public class ClientGUI extends javax.swing.JFrame {
     private long timerLastAmount=0;
     private long timerMostCurrent=0;
     private long ms;
+    private int progressAmount;
+    private Thread progress;
     private Thread timer;
+    private static int trackLength;
     
     public ClientGUI() {
         
         initComponents();
-        
+//        trackLength = player.getMetaLength(1236);
+//        Server serv = new Server();
+//        serv.streamMetaData();
+//        Server.streamAudio();
         //player.play(-1);
         //player.pause();
     }
@@ -35,8 +41,12 @@ public class ClientGUI extends javax.swing.JFrame {
         String mss = String.format("%02d:%02d:%02d",
         TimeUnit.MILLISECONDS.toMinutes(millis) % TimeUnit.HOURS.toMinutes(1),
         TimeUnit.MILLISECONDS.toSeconds(millis) % TimeUnit.MINUTES.toSeconds(1),
-        millis/100);
+        (millis/100)%100);
         return mss;
+    }
+    public void updateVars(String mode) {
+        updateTime(mode);
+        updateProgress(mode);
     }
     
     public void updateTime(String mode) {
@@ -47,9 +57,9 @@ public class ClientGUI extends javax.swing.JFrame {
                     public void run(){
                         try{
                             while(true){
-                                ms = player.getTime();
+                                ms = timerLastAmount + player.getTime();
                                 if(ms>timerMostCurrent) timerMostCurrent = ms;
-                                ms += timerLastAmount;
+                                //ms += timerLastAmount;
                                 jLabel1.setText("time is:"+ timeFormater(ms));
                             }
                         }catch(Exception e){
@@ -62,22 +72,50 @@ public class ClientGUI extends javax.swing.JFrame {
         
         // PAUSING
         }else{
-            ms = -1;
             try{
                 timer.stop();
-//                timer.wait();
                 timer.interrupt();
                 timer = null;
             }catch(Exception e){
-                JOptionPane.showMessageDialog(null, "Error2 pausing "+ e);
+                JOptionPane.showMessageDialog(null, "Error2 timer pausing "+ e);
             }
             System.out.println("timerLastAmount="+timerLastAmount);
             System.out.println("timerMostCurrent="+timerMostCurrent);
             System.out.println("ms="+ms);
-            timerLastAmount += timerMostCurrent;
+            timerLastAmount = ms;
             timerMostCurrent = -1;
-            
-            //jLabel1.setText("time is:"+ timeFormater(ms));
+        }
+    }
+    public void updateProgress(String mode) {
+        // Playing
+        System.out.println("ms="+ ms);
+        System.out.println("trlength="+ trackLength);
+        if(mode == "resume"){
+            progress = new Thread(
+                new Runnable(){
+                    public void run(){
+                        try{
+                            while(true){
+                                progressAmount = (int)(ms*100) / trackLength;
+                                jLabel2.setText("progress is:"+ String.format("%02d",progressAmount) +"%");
+                            }
+                        }catch(Exception e){
+                            JOptionPane.showMessageDialog(null, "Error1 displaying progress resuming"+ e);
+                        }
+                    }
+                }
+            );
+            progress.start();
+        
+        // PAUSING
+        }else{
+            try{
+                progress.stop();
+                progress.interrupt();
+                progress = null;
+            }catch(Exception e){
+                JOptionPane.showMessageDialog(null, "Error2 progress pausing "+ e);
+            }
         }
     }
     /**
@@ -92,6 +130,7 @@ public class ClientGUI extends javax.swing.JFrame {
         jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -111,6 +150,8 @@ public class ClientGUI extends javax.swing.JFrame {
 
         jLabel1.setText("jLabel1");
 
+        jLabel2.setText("jLabel2");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -126,6 +167,10 @@ public class ClientGUI extends javax.swing.JFrame {
                         .addGap(116, 116, 116)
                         .addComponent(jLabel1)))
                 .addContainerGap(173, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addGap(0, 0, Short.MAX_VALUE)
+                .addComponent(jLabel2)
+                .addGap(60, 60, 60))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -134,7 +179,9 @@ public class ClientGUI extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jButton1)
                     .addComponent(jButton2))
-                .addGap(46, 46, 46)
+                .addGap(8, 8, 8)
+                .addComponent(jLabel2)
+                .addGap(22, 22, 22)
                 .addComponent(jLabel1)
                 .addContainerGap(163, Short.MAX_VALUE))
         );
@@ -144,13 +191,13 @@ public class ClientGUI extends javax.swing.JFrame {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         // TODO add your handling code here:
-        updateTime("resume");
+        updateVars("resume");
         player.resume();
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         // TODO add your handling code here:
-        updateTime("save");
+        updateVars("save");
         player.pause();
     }//GEN-LAST:event_jButton2ActionPerformed
 
@@ -180,13 +227,14 @@ public class ClientGUI extends javax.swing.JFrame {
             java.util.logging.Logger.getLogger(ClientGUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
-      //  player = new CustomPlayer();
+        player = new CustomPlayer();
+        trackLength = player.getMetaLength(1236);
       //  player.setPath("/Users/negarbayati/Desktop/still.mp3");
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
+//                player = new CustomPlayer();
                 new ClientGUI().setVisible(true);
-                player = new CustomPlayer();
 //                player.setPath("/Users/Shayanyousefian/Documents/Eclipse_workspace/Audio-Streamer-Java/still.mp3");
                 player.setSocket(1234);
             }
@@ -197,5 +245,6 @@ public class ClientGUI extends javax.swing.JFrame {
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     // End of variables declaration//GEN-END:variables
 }
