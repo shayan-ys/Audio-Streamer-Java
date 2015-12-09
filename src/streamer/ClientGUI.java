@@ -5,6 +5,7 @@
  */
 package streamer;
 
+import java.util.concurrent.TimeUnit;
 import javax.swing.JOptionPane;
 
 /**
@@ -30,6 +31,14 @@ public class ClientGUI extends javax.swing.JFrame {
         //player.pause();
     }
 
+    public String timeFormater(long millis){
+        String mss = String.format("%02d:%02d:%02d",
+        TimeUnit.MILLISECONDS.toMinutes(millis) % TimeUnit.HOURS.toMinutes(1),
+        TimeUnit.MILLISECONDS.toSeconds(millis) % TimeUnit.MINUTES.toSeconds(1),
+        millis/100);
+        return mss;
+    }
+    
     public void updateTime(String mode) {
         // Playing
         if(mode == "resume"){
@@ -41,9 +50,7 @@ public class ClientGUI extends javax.swing.JFrame {
                                 ms = player.getTime();
                                 if(ms>timerMostCurrent) timerMostCurrent = ms;
                                 ms += timerLastAmount;
-                                StringBuilder sb = new StringBuilder();
-                                sb.append(ms);
-                                jLabel1.setText("time is:"+ sb.toString());
+                                jLabel1.setText("time is:"+ timeFormater(ms));
                             }
                         }catch(Exception e){
                             JOptionPane.showMessageDialog(null, "Error1 displaying time resuming"+ e);
@@ -70,9 +77,7 @@ public class ClientGUI extends javax.swing.JFrame {
             timerLastAmount += timerMostCurrent;
             timerMostCurrent = -1;
             
-            StringBuilder sb = new StringBuilder();
-            sb.append(timerLastAmount);
-            jLabel1.setText("time is:"+ sb.toString());
+            //jLabel1.setText("time is:"+ timeFormater(ms));
         }
     }
     /**
